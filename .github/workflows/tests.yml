@@ -17,7 +17,7 @@ jobs:
           make
           make test
 
-  Test_Add:
+Test_Add:
     runs-on: ubuntu-latest
     needs: Compilation
     steps:
@@ -26,9 +26,6 @@ jobs:
 
       - name: Build
         run: |
-          last_directory=$(basename ${{ runner.workspace }})
-          git clone https://github.com/${{ github.repository }}.git
-          cd ./$last_directory
           mkdir -p build
           cd build
           cmake ..
@@ -46,10 +43,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-add-report
-          path: build/report.txt
-          retention-days: 14
+          path: build/report.txt      # <-- le fichier à récupérer
+          retention-days: 14          # optionnel
 
-      - name: Job summary (facultatif)
+      - name: Job summary (facultatif mais pratique)
         run: |
           echo "### Résultat du test *add*" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
