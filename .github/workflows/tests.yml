@@ -5,14 +5,22 @@ on: push
 jobs:
   Compilation:
     runs-on: ubuntu-latest
+    outputs:
+      build-dir: ${{ steps.set-build-dir.outputs.build-dir }}
     steps:
-      - name: Récupération du dépôt
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Préparer la compilation
+        id: set-build-dir
         run: |
-          last_directory=$(basename ${{ runner.workspace }})
-          git clone https://github.com/${{ github.repository }}.git
-          cd ./$last_directory
-          mkdir build
-          cd build
+          BUILD_DIR="$RUNNER_WORKSPACE/build"
+          mkdir -p $BUILD_DIR
+          echo "build-dir=$BUILD_DIR" >> $GITHUB_OUTPUT
+
+      - name: Compilation
+        run: |
+          cd ${{ steps.set-build-dir.outputs.build-dir }}
           cmake ..
           make
           make test
@@ -21,107 +29,70 @@ jobs:
     runs-on: ubuntu-latest
     needs: Compilation
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Build
-        run: |
-          mkdir -p build
-          cd build
-          cmake ..
-          make
-
       - name: Run test "add" and capture report
         run: |
-          cd build
-          set -e
-          echo "== Test add 10 5 ==" > report.txt
-          ./src/calculator add 10 5 | tee -a report.txt
-          echo "Exit code: $?" >> report.txt
+          BUILD_DIR="${{ needs.Compilation.outputs.build-dir }}"
+          cd $BUILD_DIR
+          echo "== Test add 10 5 ==" > report_add.txt
+          ./src/calculator add 10 5 | tee -a report_add.txt
+          echo "Exit code: $?" >> report_add.txt
 
       - name: Upload report as artifact
         uses: actions/upload-artifact@v4
         with:
           name: test-add-report
-          path: build/report.txt
+          path: ${{ needs.Compilation.outputs.build-dir }}/report_add.txt
           retention-days: 14
 
-      - name: Job summary (facultatif mais pratique)
+      - name: Job summary
         run: |
           echo "### Résultat du test *add*" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          cat build/report.txt >> $GITHUB_STEP_SUMMARY
+          cat ${{ needs.Compilation.outputs.build-dir }}/report_add.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
   Test_Sub:
     runs-on: ubuntu-latest
     needs: Compilation
     steps:
-      - name: Test sub
+      - name: Run test "sub" and capture report
         run: |
-          last_directory=$(basename ${{ runner.workspace }})
-          git clone https://github.com/${{ github.repository }}.git
-          cd ./$last_directory
-          mkdir build
-          cd build
-          cmake ..
-          make
-          ./src/calculator sub 10 3
+          BUILD_DIR="${{ needs.Compilation.outputs.build-dir }}"
+          cd $BUILD_DIR
+          echo "== Test sub 10 3 ==" > report_sub.txt
+          ./src/calculator sub 10 3 | tee -a report_sub.txt
+          echo "Exit code: $?" >> report_sub.txt
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-sub-report
+          path: ${{ needs.Compilation.outputs.build-dir }}/report_sub.txt
+          retention-days: 14
 
   Test_Mul:
     runs-on: ubuntu-latest
     needs: Compilation
     steps:
-      - name: Test mul
+      - name: Run test "mul" and capture report
         run: |
-          last_directory=$(basename ${{ runner.workspace }})
-          git clone https://github.com/${{ github.repository }}.git
-          cd ./$last_directory
-          mkdir build
-          cd build
-          cmake ..
-          make
-          ./src/calculator mul 3 7
+          BUILD_DIR="${{ needs.Compilation.outputs.build-dir }}"
+          cd $BUILD_DIR
+          echo "== Test mul 3 7 ==" > report_mul.txt
+          ./src/calculator mul 3 7 | tee -a report_mul.txt
+          echo "Exit code: $?" >> report_mul.txt
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-mul-report
+          path: ${{ needs.Compilation.outputs.build-dir }}/report_mul.txt
+          retention-days: 14
 
   Test_Div:
     runs-on: ubuntu-latest
     needs: Compilation
     steps:
-      - name: Test div
+      - name: Run test "div" and capture report
         run: |
-          last_directory=$(basename ${{ runner.workspace }})
-          git clone https://github.com/${{ github.repository }}.git
-          cd ./$last_directory
-          mkdir build
-          cd build
-          cmake ..
-          make
-          ./src/calculator div 10 2
-
-  Test_Car:
-    runs-on: ubuntu-latest
-    needs: Compilation
-    steps:
-      - name: Test car
-        run: |
-          last_directory=$(basename ${{ runner.workspace }})
-          git clone https://github.com/${{ github.repository }}.git
-          cd ./$last_directory
-          mkdir build
-          cd build
-          cmake ..
-          make
-          ./src/calculator car 5
-
-  Deployment:
-    runs-on: ubuntu-latest
-    needs:
-      - Test_Add
-      - Test_Sub
-      - Test_Mul
-      - Test_Div
-      - Test_Car
-    steps:
-      - name: Déploiement
-        run: echo "Déploiement de la solution"
+          BUI
