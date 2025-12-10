@@ -125,9 +125,3 @@ jobs:
     steps:
       - name: Déploiement
         run: echo "Déploiement de la solution"
-
-        # .github/workflows/tests.yml
-
-name: Pipeline CI/CD - Industrialisation Finale
-
-on: push
