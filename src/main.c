@@ -8,12 +8,12 @@ int main(int argc, char *argv[])
     char *op;
     char *a;
     char *b;
-    double r = 0;
+    double r = 0.0;
 
     if (argc == 4) {
         op = argv[1];
-        a = argv[2];
-        b = argv[3];
+        a  = argv[2];
+        b  = argv[3];
 
         if (strcmp(op, "add") == 0) {
             r = _add(atof(a), atof(b));
